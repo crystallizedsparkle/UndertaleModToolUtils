@@ -7,23 +7,23 @@ using System.Linq;
 // make sure a data.win is loaded.
 EnsureDataLoaded();
 // create list with every asset
-var assets = new List<dynamic>
+var assets = new List<(dynamic data, string name)>
 {
-    Data.TextureGroupInfo,
-    Data.Extensions,
-    Data.AnimationCurves,
-    Data.Sequences,
-    Data.Timelines,
-    Data.Fonts,
-    Data.Paths,
-    Data.Backgrounds,
-    Data.AudioGroups,
-    Data.Shaders,
-    Data.Scripts,
-    Data.Rooms,
-    Data.Sounds,
-    Data.Sprites,
-    Data.GameObjects,
+    (Data.TextureGroupInfo, "TextureGroup" ),
+    (Data.Extensions, "Extension"),
+    (Data.AnimationCurves, "AnimationCurve"),
+    (Data.Sequences, "Sequence"),
+    (Data.Timelines, "Timeline"),
+    (Data.Fonts, "Font"),
+    (Data.Paths, "Path"),
+    (Data.Backgrounds, "Background"),
+    (Data.AudioGroups, "AudioGroup"),
+    (Data.Shaders, "Shader"),
+    (Data.Scripts, "Script"),
+    (Data.Rooms, "Room"),
+    (Data.Sounds, "Sound"),
+    (Data.Sprites, "Sprite"),
+    (Data.GameObjects, "Object")
 };
 // beep beep beep :)
 Console.Beep(200, 100);
@@ -87,21 +87,28 @@ void RunScript()
 
         // use the reverse dictionary to get all of the connected values to the code.
         reverseConstants.TryGetValue(code, out List<string> names);
+
         // if if the TryGetValue returns false this isnt created, so create it.
         names ??= new List<string>();
+
+        for (int entry = 0; entry < names.Count; entry++)
+        {
+            names[entry] = $"Constant : {names[entry]}";
+        }
+
         // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
         if (keyname != null && (code >= 48 && code <= 90))
         {
-            names.Insert(0, $"ord(\"{keyname.ToCharArray()[0]}\")"); // insert the character into the list
+            names.Insert(0, $"Constant : ord(\"{keyname.ToCharArray()[0]}\")"); // insert the character into the list
         }
 
         // loop through assets
         foreach (var asset in assets)
         {
             // make sure were not going under or over the array
-            if (code < asset.Count && code >= 0)
+            if (code < asset.data.Count && code >= 0)
             {
-                names.Insert(0, asset[code].Name.ToString().Replace("\"", "")); // insert the asset into the list
+                names.Insert(0, $"{asset.name} : {asset.data[code].Name.ToString().Replace("\"", "")}"); // insert the asset into the list
             }
         }
 
