@@ -1,28 +1,3 @@
-/*
-
-    AssetDisplayer V1.0.2
-
-    Script made by crystallizedsparkle.
-    Thank you for using my script!
-
-    This script displays every important asset and their ID's into text files and more!.
-
-
-    // CHANGELOG //
-
-    V1.0.0
-        - Created base script.
-
-    V1.0.1
-        - Created changelog.
-        - Fixed an issue where text files were added onto instead of overwritten.
-
-    V1.0.2
-        - Added optional exports.
-        - Added colors and instance keywords to the constants.
-
-*/
-
 using System;
 using System.Text;
 using System.Windows.Forms;

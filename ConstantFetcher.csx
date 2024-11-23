@@ -1,29 +1,3 @@
-/*
-
-    ConstantFetcher V1.0.1
-
-    Script made by crystallizedsparkle.
-    Thank you for using my script!
-
-    This script gives every constant and asset to an integer, 
-
-    im really proud of this script!
-
-
-    // CHANGELOG //
-
-    V1.0.0
-        - Created base script.
-    
-    V1.0.1
-        - Made it so each constant is on a new line making it much easier to read.
-        - Updated divider.
-        - Replaced empty strings with 'String.Empty'.
-        - Fixed a crash related to empty strings as the input.
-        - Added pie. (yum)
-        - Fixed huge bug causing ID's that didnt have constants alongside them to not be returned.
-
-*/
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -127,7 +101,7 @@ void RunScript()
             // make sure were not going under or over the array
             if (code < asset.Count && code >= 0)
             {
-                names.Insert(0, asset[code].Name.ToString()); // insert the asset into the list
+                names.Insert(0, asset[code].Name.ToString().Replace("\"", "")); // insert the asset into the list
             }
         }
 
