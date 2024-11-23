@@ -57,8 +57,10 @@ void RunScript()
     input = Regex.Replace(input, @"[^\d,.-]", String.Empty);
 
     // split string at commas.
-    string[] lines = input.Split(new[] { ',' }, StringSplitOptions.None);
+    List<string> lines = input.Split(new[] { ',' }, StringSplitOptions.None).ToList();
 
+    // removes duplicate entries to clean up output
+    lines = lines.Distinct().ToList();
 
     // create a reverse dictionary whatever the hell that is
     var reverseConstants = Data.BuiltinList.Constants
