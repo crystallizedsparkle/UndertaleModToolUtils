@@ -39,7 +39,7 @@ void RunScript()
     string input = String.Empty;
     while (input == String.Empty)
     {
-        input = SimpleTextInput("ConstantFetcher.csx", "Enter key codes! (seperated by ',')", String.Empty, true, true);
+        input = SimpleTextInput("ConstantFetcher.csx", "Enter ID's! (seperated by ',')", String.Empty, true, true);
     }
 
     // this means user closed out of the window
