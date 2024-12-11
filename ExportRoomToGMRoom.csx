@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Underanalyzer.Decompiler;
 using UndertaleModLib.Util;
 using UndertaleModLib.Models;
@@ -605,12 +606,28 @@ void DumpRoom(UndertaleRoom room_data)
     // turn object into json
     string json_string = JsonSerializer.Serialize(room, new JsonSerializerOptions { AllowTrailingCommas = true, WriteIndented = true });
     File.WriteAllText($"{room_directory}\\{room_data.Name.Content}.yy", json_string);
+    IncrementProgressParallel();
 }
 
-// loop through each room and dump them
-foreach (UndertaleRoom room in Data.Rooms)
+async Task DumpAllRooms()
 {
-    DumpRoom(room);
+    int rooms_completed = 0;
+    // loop through each room and dump them
+    foreach (UndertaleRoom room in Data.Rooms)
+    {
+        // give the script some time to think (required to make the progress bar work)
+        await Task.Delay(1);
+        // dump the room
+        DumpRoom(room);
+    }
 }
+// progress bar stuff
+SetProgressBar(null, "Rooms", 0, Data.Rooms.Count);
+StartProgressBarUpdater();
+// run the main task
+await DumpAllRooms();
+// clean up progress bar
+await StopProgressBarUpdater();
+HideProgressBar();
 
 ScriptMessage($"Export Complete.");
