@@ -158,12 +158,13 @@ public void DumpSound(UndertaleSound snd)
 
     byte[] file_data = File.ReadAllBytes(sound_path);
 
-    // this array is to get the first 4 bytes of the file
+    // this array is to get the first 3 bytes of the file
     byte[] file_signature = new byte[3];
 
-    // copy the first 4 bytes into this array
+    // copy the first 3 bytes into this array
     Array.Copy(file_data, 0, file_signature, 0, 3);
 
+    // set these for future operations
     WaveStream ws = null;
     string file_ext = String.Empty;
 
