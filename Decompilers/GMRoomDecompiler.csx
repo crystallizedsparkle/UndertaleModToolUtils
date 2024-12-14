@@ -590,9 +590,9 @@ void DumpRoom(UndertaleRoom room_data)
     room.viewSettings = new GMRoomViewSettings
     {
         inheritViewSettings = false,
-        enableViews = room_data.Flags.HasFlag(UndertaleRoom.RoomEntryFlags.EnableViews),
-        clearViewBackground = room_data.DrawBackgroundColor,
-        clearDisplayBuffer = room_data.DrawBackgroundColor
+        clearDisplayBuffer = room_data.Flags.HasFlag(UndertaleRoom.RoomEntryFlags.DoNotClearDisplayBuffer),
+        clearViewBackground = room_data.Flags.HasFlag(UndertaleRoom.RoomEntryFlags.ShowColor),
+        enableViews = room_data.Flags.HasFlag(UndertaleRoom.RoomEntryFlags.EnableViews)
     };
     room.physicsSettings = new GMRoomPhysicsSettings
     {
