@@ -136,23 +136,23 @@ public class GMRInstance : GMAssetBase
         resourceVersion = "1.0";
     }
     // i dont know what this is, please tell me or make a PR
-    public List<object> properties { get; set; } = new();
-    public bool isDnd { get; set; }
-    public AssetIDReference objectId { get; set; }
-    public bool inheritCode { get; set; }
-    public bool hasCreationCode { get; set; }
-    public uint colour { get; set; }
-    public float rotation { get; set; }
-    public float scaleX { get; set; }
-    public float scaleY { get; set; }
-    public float imageSpeed { get; set; }
-    public int imageIndex { get; set; }
-    public AssetIDReference? inheritedItemId { get; set; } = null;
-    public bool frozen { get; set; }
-    public bool ignore { get; set; }
-    public bool inheritItemSettings { get; set; }
-    public float x { get; set; }
-    public float y { get; set; }
+    public List<object> properties { get; set; } = new(); // if the object has properties like if its mirrored x, mirrored y, name of the instance, etc.
+    public bool isDnd { get; set; } // im not sure what this is but im assuming if its blocked or not
+    public AssetIDReference objectId { get; set; } // the object itself
+    public bool inheritCode { get; set; } // inherits the creation code of the object
+    public bool hasCreationCode { get; set; } // the creation code of the object
+    public uint colour { get; set; } // color of the object
+    public float rotation { get; set; } // rotation of the object
+    public float scaleX { get; set; } // xscale of the object 
+    public float scaleY { get; set; } // yscale of the object 
+    public float imageSpeed { get; set; } // image speed of the object 
+    public int imageIndex { get; set; } // which frame of the object
+    public AssetIDReference? inheritedItemId { get; set; } = null; // inherits which object is it
+    public bool frozen { get; set; } // if the object is frozen
+    public bool ignore { get; set; } // ignores the object or not
+    public bool inheritItemSettings { get; set; } // inherits the settings of the object
+    public float x { get; set; } // x position of the object
+    public float y { get; set; } // y position of the object
 }
 public class GMRInstanceLayer : GMRLayerBase
 {
