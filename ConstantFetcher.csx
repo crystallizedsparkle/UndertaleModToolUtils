@@ -75,7 +75,7 @@ TextBox inputBox = new()
     AcceptsTab = true,
     Multiline = true,
     ScrollBars = ScrollBars.Vertical,
-    Text = "fuck",
+    Text = "",
     Size = new System.Drawing.Size(200, 400),
     Dock = DockStyle.Left
 };
