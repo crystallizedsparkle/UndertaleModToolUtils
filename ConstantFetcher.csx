@@ -1,13 +1,45 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Linq;
-// bring back for easy debugging
-//using System.Windows.Forms;
-
+using System.Windows.Forms;
+using System.Text.Json;
 // make sure a data.win is loaded.
 EnsureDataLoaded();
-// create list with every asset
-var assets = new List<(dynamic data, string name)>
+
+File.WriteAllText( $"{Path.GetDirectoryName(FilePath)}\\yeah.json", JsonSerializer.Serialize(Data.GameSpecificRegistry, new JsonSerializerOptions { WriteIndented = true }));
+
+// for macro stuff!
+public string definitionDir = $"{AppDomain.CurrentDomain.BaseDirectory}GameSpecificData\\Definitions\\";
+public string macroDir = $"{AppDomain.CurrentDomain.BaseDirectory}GameSpecificData\\Underanalyzer\\";
+
+public class MacroData
+{
+    public MacroTypes Types { get; set; } = new();
+    public class MacroTypes
+    {
+        public Dictionary<string, EnumData> Enums { get; set; } = new();
+    }
+}
+
+public class EnumData
+{
+    public EnumData(string name, Dictionary<string, long>? values)
+    {
+        this.Name = name;
+        if (values is not null)
+            this.Values = values;
+    }
+    public Dictionary<string, long> Values { get; set; } = new();
+    public string Name { get; set; }
+}
+
+// beep beep beep :)
+Console.Beep(200, 100);
+Console.Beep(400, 100);
+Console.Beep(600, 100);
+
+// create a reverse dictionary whatever the hell that is
+public var assets = new List<(dynamic data, string name)>
 {
     (Data.TextureGroupInfo, "TextureGroup" ),
     (Data.Extensions, "Extension"),
@@ -25,34 +57,63 @@ var assets = new List<(dynamic data, string name)>
     (Data.Sprites, "Sprite"),
     (Data.GameObjects, "Object")
 };
-// beep beep beep :)
-Console.Beep(200, 100);
-Console.Beep(400, 100);
-Console.Beep(600, 100);
-// this is here to start the loop
-public bool running = true;
-RunScript();
 
-void RunScript()
+
+Form form = new()
 {
-    // obtain input from user
-    string input = String.Empty;
-    while (input == String.Empty)
-    {
-        input = SimpleTextInput("ConstantFetcher.csx", "Enter IDs! (seperated by ',')", String.Empty, true, true);
-    }
+    Text = "ConstantFetcher",
+    AutoSize = true,
+    MinimizeBox = false,
+    MaximizeBox = false,
+    StartPosition = FormStartPosition.CenterScreen,
+    FormBorderStyle = FormBorderStyle.FixedDialog
+};
 
-    // this means user closed out of the window
+TextBox inputBox = new()
+{
+    AcceptsReturn = true,
+    AcceptsTab = true,
+    Multiline = true,
+    ScrollBars = ScrollBars.Vertical,
+    Text = "fuck",
+    Size = new System.Drawing.Size(200, 400),
+    Dock = DockStyle.Left
+};
+
+TextBox outputBox = new()
+{
+    AcceptsReturn = true,
+    AcceptsTab = true,
+    Multiline = true,
+    ScrollBars = ScrollBars.Vertical,
+    Text = "fuck",
+    Size = new System.Drawing.Size(400, 400),
+    Dock = DockStyle.Right,
+    ReadOnly = true
+};
+Button confirmButton = new()
+{
+    Text = "Confirm",
+    Dock = DockStyle.Top,
+};
+
+confirmButton.Click += ConfirmButton_Click;
+
+public void ConfirmButton_Click(object sender, EventArgs e)
+{
+    outputBox.Text = String.Empty;
+    outputBox.Text = GetConstants(inputBox.Text);
+}
+
+form.Controls.Add(inputBox);
+form.Controls.Add(outputBox);
+form.Controls.Add(confirmButton);
+
+public string GetConstants(string input)
+{
     if (input is null)
-    {
-        running = false;
-        return;
-    }
+        return "Input is null.";
     
-    // yummy pie
-    if (input.Contains("3.141592653589793"))
-        ScriptMessage("ITS PI!!!");
-
     // regex to get rid of everything except numbers and commas
     input = Regex.Replace(input, @"[^\d,.-]", String.Empty);
 
@@ -61,11 +122,6 @@ void RunScript()
 
     // removes duplicate entries to clean up output
     lines = lines.Distinct().ToList();
-
-    // create a reverse dictionary whatever the hell that is
-    var reverseConstants = Data.BuiltinList.Constants
-        .GroupBy(kvp => kvp.Value)
-        .ToDictionary(group => group.Key, group => group.Select(kvp => kvp.Key).ToList());
 
     // create stringbuilder for the output text
     StringBuilder sb = new StringBuilder();
@@ -79,16 +135,21 @@ void RunScript()
             continue;
 
         // turn the line into an integer so it can be processed into the dictionary
-        int code = int.Parse(line);
+        int id = int.Parse(line);
         
         // gets the name of the key from the UTMT key enum.
-        string keyname = Enum.GetName(typeof(EventSubtypeKey), code);
+        string keyname = Enum.GetName(typeof(EventSubtypeKey), id);
 
         // Append a little seperator for readability
-        sb.AppendLine($"----------------------------------\n\nValues for {code}:");
+        sb.AppendLine($"----------------------------------\r\n\r\nValues for {id}:");
 
-        // use the reverse dictionary to get all of the connected values to the code.
-        reverseConstants.TryGetValue(code, out List<string> names);
+        // reverse dictionary
+        Dictionary<double, List<string>> reverseConstants = Data.BuiltinList.Constants
+            .GroupBy(kvp => kvp.Value)
+            .ToDictionary(group => group.Key, group => group.Select(kvp => kvp.Key).ToList());
+
+        // use the reverse dictionary to get all of the connected values to the id.
+        reverseConstants.TryGetValue(id, out List<string> names);
 
         // if if the TryGetValue returns false this isnt created, so create it.
         names ??= new List<string>();
@@ -99,7 +160,7 @@ void RunScript()
         }
 
         // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
-        if (keyname != null && (code >= 48 && code <= 90))
+        if (keyname is not null && (id >= 48 && id <= 90))
         {
             names.Insert(0, $"Constant : ord(\"{keyname.ToCharArray()[0]}\")"); // insert the character into the list
         }
@@ -108,37 +169,54 @@ void RunScript()
         foreach (var asset in assets)
         {
             // make sure were not going under or over the array
-            if (code < asset.data.Count && code >= 0)
+            if (id < asset.data.Count && id >= 0)
             {
-                names.Insert(0, $"{asset.name} : {asset.data[code].Name.ToString().Replace("\"", "")}"); // insert the asset into the list
+                names.Insert(0, $"{asset.name} : {asset.data[id].Name.ToString().Replace("\"", "")}"); // insert the asset into the list
             }
         }
 
+        // comment this block out if you arent using underanalyzer
+        // /*
+        // im gonna manually rip the enums from it because im lazy and I dont want to comprehend how UTMT gets it all.
+        string[] defs = Directory.GetFiles(definitionDir);
+
+        foreach (string def in defs)
+        {
+            GameSpecificResolver.GameSpecificDefinition currentDef = JsonSerializer.Deserialize<GameSpecificResolver.GameSpecificDefinition>(File.ReadAllText(def));
+
+            foreach (GameSpecificResolver.GameSpecificCondition condition in currentDef.Conditions)
+            {
+                if ((condition.ConditionKind == "DisplayName.Regex" && Regex.IsMatch(Data.GeneralInfo.DisplayName.Content, condition.Value)) || condition.ConditionKind == "Always")
+                {
+                    string macroPath = $"{macroDir}{currentDef.UnderanalyzerFilename}";
+                    if (File.Exists(macroPath))
+                    {
+                        MacroData macro = JsonSerializer.Deserialize<MacroData>(File.ReadAllText(macroPath));
+
+                        foreach (KeyValuePair<string, EnumData> kvp in macro.Types.Enums)
+                        {
+                            var myKey = kvp.Value.Values.FirstOrDefault(x => x.Value == id).Key;
+                            // add the enum
+                            if (myKey != String.Empty && myKey is not null)
+                                names.Add($"Enum: {kvp.Value.Name}.{myKey}");
+                        }
+                    }
+                }
+
+            }
+        }
+        // */
         // fun string.join stuff that adds a comma and a space after each corresponding matching value
-        sb.AppendLine(string.Join(",\n", names));
+        sb.AppendLine(string.Join("\r\n", names));
         // append an empty line
         sb.AppendLine(String.Empty);
+
         if (names.Count == 0)
             sb.AppendLine("No Values."); // if theres nothing
 
     }
 
-    // a little output box showing all the values
-    SimpleTextInput("ConstantFetcher.csx", String.Empty, sb.ToString(), true);
-    running = false;
-
+    return sb.ToString();
 }
 
-// really dumb and sloppy logic to let the script loop
-while (!running)
-{
-    bool runagain = ScriptQuestion("Run script again?");
-    if (runagain)
-    {
-        running = true;
-        RunScript();
-    }
-    else
-        break;
-}
-    
+form.ShowDialog();
