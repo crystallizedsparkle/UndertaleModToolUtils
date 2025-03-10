@@ -6,8 +6,6 @@ using System.Text.Json;
 // make sure a data.win is loaded.
 EnsureDataLoaded();
 
-File.WriteAllText( $"{Path.GetDirectoryName(FilePath)}\\yeah.json", JsonSerializer.Serialize(Data.GameSpecificRegistry, new JsonSerializerOptions { WriteIndented = true }));
-
 // for macro stuff!
 public string definitionDir = $"{AppDomain.CurrentDomain.BaseDirectory}GameSpecificData\\Definitions\\";
 public string macroDir = $"{AppDomain.CurrentDomain.BaseDirectory}GameSpecificData\\Underanalyzer\\";
