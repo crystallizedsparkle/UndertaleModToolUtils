@@ -136,6 +136,19 @@ public string GetConstants(string input)
         if (int.TryParse(line, out int id))
         {
             char ASCIIChar = (char)id;
+            string? ordString = null;
+
+            switch (ASCIIChar)
+            {
+                case '\n': ordString = "\\n"; break;
+                case '\r': ordString = "\\r"; break;
+                case '\b': ordString = "\\b"; break;
+                case '\t': ordString = "\\t"; break;
+                case '\v': ordString = "\\v"; break;
+                case '\\': ordString = "\\\\"; break;
+                case '\a': ordString = "\\a"; break;
+                case '"': ordString = "\\\""; break;
+            }
 
 
             // Append a little seperator for readability
@@ -160,7 +173,7 @@ public string GetConstants(string input)
             // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
             if (id >= 48 && id <= byte.MaxValue)
             {
-                names.Insert(0, $"Constant : ord(\"{ASCIIChar}\")"); // insert the character into the list
+                names.Insert(0, $"Constant : ord(\"{(ordString is null ? ASCIIChar : ordString)}\")"); // insert the character into the list
             }
 
             // loop through assets
