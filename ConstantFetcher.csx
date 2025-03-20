@@ -158,7 +158,7 @@ public string GetConstants(string input)
             }
 
             // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
-            if (id >= 48 && id <= 90)
+            if (id >= 48 && id <= byte.MaxValue)
             {
                 names.Insert(0, $"Constant : ord(\"{ASCIIChar}\")"); // insert the character into the list
             }
