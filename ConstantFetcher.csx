@@ -25,7 +25,7 @@ public class EnumData
     {
         this.Name = name;
         if (values is not null)
-            this.Values = values;
+            this.Values = values; 
     }
     public Dictionary<string, long> Values { get; set; } = new();
     public string Name { get; set; }
@@ -133,84 +133,86 @@ public string GetConstants(string input)
             continue;
 
         // turn the line into an integer so it can be processed into the dictionary
-        int id = int.Parse(line);
-        
-        // gets the name of the key from the UTMT key enum.
-        string keyname = Enum.GetName(typeof(EventSubtypeKey), id);
-
-        // Append a little seperator for readability
-        sb.AppendLine($"----------------------------------\r\n\r\nValues for {id}:");
-
-        // reverse dictionary
-        Dictionary<double, List<string>> reverseConstants = Data.BuiltinList.Constants
-            .GroupBy(kvp => kvp.Value)
-            .ToDictionary(group => group.Key, group => group.Select(kvp => kvp.Key).ToList());
-
-        // use the reverse dictionary to get all of the connected values to the id.
-        reverseConstants.TryGetValue(id, out List<string> names);
-
-        // if if the TryGetValue returns false this isnt created, so create it.
-        names ??= new List<string>();
-
-        for (int entry = 0; entry < names.Count; entry++)
+        if (int.TryParse(line, out int id))
         {
-            names[entry] = $"Constant : {names[entry]}";
-        }
+            char ASCIIChar = (char)id;
 
-        // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
-        if (keyname is not null && (id >= 48 && id <= 90))
-        {
-            names.Insert(0, $"Constant : ord(\"{keyname.ToCharArray()[0]}\")"); // insert the character into the list
-        }
 
-        // loop through assets
-        foreach (var asset in assets)
-        {
-            // make sure were not going under or over the array
-            if (id < asset.data.Count && id >= 0)
+            // Append a little seperator for readability
+            sb.AppendLine($"----------------------------------\r\n\r\nValues for {id}:");
+
+            // reverse dictionary
+            Dictionary<double, List<string>> reverseConstants = Data.BuiltinList.Constants
+                .GroupBy(kvp => kvp.Value)
+                .ToDictionary(group => group.Key, group => group.Select(kvp => kvp.Key).ToList());
+
+            // use the reverse dictionary to get all of the connected values to the id.
+            reverseConstants.TryGetValue(id, out List<string> names);
+
+            // if if the TryGetValue returns false this isnt created, so create it.
+            names ??= new List<string>();
+
+            for (int entry = 0; entry < names.Count; entry++)
             {
-                names.Insert(0, $"{asset.name} : {asset.data[id].Name.ToString().Replace("\"", "")}"); // insert the asset into the list
+                names[entry] = $"Constant : {names[entry]}";
             }
-        }
 
-        // comment this block out if you arent using underanalyzer
-        // /*
-        // im gonna manually rip the enums from it because im lazy and I dont want to comprehend how UTMT gets it all.
-        string[] defs = Directory.GetFiles(definitionDir);
-
-        foreach (string def in defs)
-        {
-            GameSpecificResolver.GameSpecificDefinition currentDef = JsonSerializer.Deserialize<GameSpecificResolver.GameSpecificDefinition>(File.ReadAllText(def));
-
-            foreach (GameSpecificResolver.GameSpecificCondition condition in currentDef.Conditions)
+            // make sure it isnt null (if its too large it can be) and in bounds of the arguments for the ord function
+            if (id >= 48 && id <= 90)
             {
-                if ((condition.ConditionKind == "DisplayName.Regex" && Regex.IsMatch(Data.GeneralInfo.DisplayName.Content, condition.Value)) || condition.ConditionKind == "Always")
-                {
-                    string macroPath = $"{macroDir}{currentDef.UnderanalyzerFilename}";
-                    if (File.Exists(macroPath))
-                    {
-                        MacroData macro = JsonSerializer.Deserialize<MacroData>(File.ReadAllText(macroPath));
+                names.Insert(0, $"Constant : ord(\"{ASCIIChar}\")"); // insert the character into the list
+            }
 
-                        foreach (KeyValuePair<string, EnumData> kvp in macro.Types.Enums)
+            // loop through assets
+            foreach (var asset in assets)
+            {
+                // make sure were not going under or over the array
+                if (id < asset.data.Count && id >= 0)
+                {
+                    names.Insert(0, $"{asset.name} : {asset.data[id].Name.ToString().Replace("\"", "")}"); // insert the asset into the list
+                }
+            }
+
+            // comment this block out if you arent using underanalyzer
+            // /*
+            // im gonna manually rip the enums from it because im lazy and I dont want to comprehend how UTMT gets it all.
+            string[] defs = Directory.GetFiles(definitionDir);
+
+            foreach (string def in defs)
+            {
+                GameSpecificResolver.GameSpecificDefinition currentDef = JsonSerializer.Deserialize<GameSpecificResolver.GameSpecificDefinition>(File.ReadAllText(def));
+
+                foreach (GameSpecificResolver.GameSpecificCondition condition in currentDef.Conditions)
+                {
+                    if ((condition.ConditionKind == "DisplayName.Regex" && Regex.IsMatch(Data.GeneralInfo.DisplayName.Content, condition.Value)) || condition.ConditionKind == "Always")
+                    {
+                        string macroPath = $"{macroDir}{currentDef.UnderanalyzerFilename}";
+                        if (File.Exists(macroPath))
                         {
-                            var myKey = kvp.Value.Values.FirstOrDefault(x => x.Value == id).Key;
-                            // add the enum
-                            if (myKey != String.Empty && myKey is not null)
-                                names.Add($"Enum: {kvp.Value.Name}.{myKey}");
+                            MacroData macro = JsonSerializer.Deserialize<MacroData>(File.ReadAllText(macroPath));
+
+                            foreach (KeyValuePair<string, EnumData> kvp in macro.Types.Enums)
+                            {
+                                var myKey = kvp.Value.Values.FirstOrDefault(x => x.Value == id).Key;
+                                // add the enum
+                                if (myKey != String.Empty && myKey is not null)
+                                    names.Add($"Enum: {kvp.Value.Name}.{myKey}");
+                            }
                         }
                     }
+
                 }
-
             }
-        }
-        // */
-        // fun string.join stuff that adds a comma and a space after each corresponding matching value
-        sb.AppendLine(string.Join("\r\n", names));
-        // append an empty line
-        sb.AppendLine(String.Empty);
+            // */
+            // fun string.join stuff that adds a comma and a space after each corresponding matching value
+            sb.AppendLine(string.Join("\r\n", names));
+            // append an empty line
+            sb.AppendLine(String.Empty);
 
-        if (names.Count == 0)
-            sb.AppendLine("No Values."); // if theres nothing
+            if (names.Count == 0)
+                sb.AppendLine("No Values."); // if theres nothing
+
+        }
 
     }
 
